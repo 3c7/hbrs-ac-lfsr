@@ -9,9 +9,12 @@ public class Main {
     private static final byte BTOA[] = {0x3E, (byte) 0x82, (byte) 0x86, (byte) 0xEB, 0x1C, 0x15, (byte) 0xAF, 0x15, 0x63, 0x17, 0x29, 0x19, (byte) 0xCF, (byte) 0x91, (byte) 0xC0};
 
     private static int[] firstLFSRSolutions = new int[0x7FFFF];
+    private static int[] secondLFSRSolutions = new int[0x3FFFFF];
     private static int[] thirdLFSRSolutions = new int[0x7FFFFF];
 
-    private static byte[] lsfrSolution = new byte[ATOB.length];
+    private static byte[] lsfr1Bytes = new byte[ATOB.length];
+    private static byte[] lsfr2Bytes = new byte[ATOB.length];
+    private static byte[] lsfr3Bytes = new byte[ATOB.length];
 
     private static final BitSet ATOBBS = BitSet.valueOf(ATOB);
     private static BitSet lsfrBitset;
@@ -22,14 +25,14 @@ public class Main {
      * @param args Commandline arguments are not used in this programm
      */
     public static void main(String[] args) {
-        LSFR lsfr1, lsfr3;
-        int[] lsfr1Solution, lsfr3Solution;
+        LSFR lsfr1, lsfr2, lsfr3;
+        int[] lsfr1Solution, lsfr2Solution, lsfr3Solution;
 
         // Checking LSFR 1
         for (int i = 1; i < 0x7FFFF; i++) {
             lsfr1 = new LSFR(i, 0x7FFFF, 0x40000, 0x72000);
-            lsfrSolution = lsfr1.getNextBit(114);
-            lsfrBitset = BitSet.valueOf(lsfrSolution);
+            lsfr1Bytes = lsfr1.getNextBit(114);
+            lsfrBitset = BitSet.valueOf(lsfr1Bytes);
             firstLFSRSolutions[i] = Util.checkSimilarity(lsfrBitset, ATOBBS, 114);
         }
         lsfr1Solution = Util.maxIndex(firstLFSRSolutions);
@@ -37,13 +40,31 @@ public class Main {
         // Checking LSFR 3
         for(int i = 1; i< 0x7FFFFF; i++) {
             lsfr3 = new LSFR(i, 0x7FFFFF, 0x400000, 0x700080);
-            lsfrSolution = lsfr3.getNextBit(114);
-            lsfrBitset = BitSet.valueOf(lsfrSolution);
+            lsfr3Bytes = lsfr3.getNextBit(114);
+            lsfrBitset = BitSet.valueOf(lsfr3Bytes);
             thirdLFSRSolutions[i] = Util.checkSimilarity(lsfrBitset, ATOBBS, 114);
         }
         lsfr3Solution = Util.maxIndex(thirdLFSRSolutions);
 
+        // Try to guess LSFR 2
+        // First set LSFR1 and LSFR3 to the correct value and get the next 114 Bits
+        lsfr1 = new LSFR(0x62DD1, 0x7FFFF, 0x40000, 0x72000);
+        lsfr3 = new LSFR(0x506FA8, 0x7FFFFF, 0x400000, 0x700080);
+        lsfr1Bytes = lsfr1.getNextBit(114);
+        lsfr3Bytes = lsfr3.getNextBit(114);
+
+        // These are the first 114 clocked bytes
+        lsfr2Bytes = Util.recombine(ATOB, lsfr1Bytes, lsfr3Bytes);
+
+        for(int i=1;i<0x3FFFFF;i++) {
+            lsfr2 = new LSFR(i, 0x3FFFFF, 0x200000, 0x300000);
+            lsfrBitset = BitSet.valueOf(lsfr2.getNextBit(114));
+            secondLFSRSolutions[i] = Util.checkSimilarity(lsfrBitset, BitSet.valueOf(lsfr2Bytes));
+        }
+        lsfr2Solution = Util.maxIndex(secondLFSRSolutions);
+
         System.out.println("Initial R1 State was: 0x" + Integer.toHexString(lsfr1Solution[0]) + " with " + lsfr1Solution[1] + " similar bits");
+        System.out.println("Initial R2 State was: 0x" + Integer.toHexString(lsfr2Solution[0]) + " with " + lsfr2Solution[1] + " similar bits");
         System.out.println("Initial R3 State was: 0x" + Integer.toHexString(lsfr3Solution[0]) + " with " + lsfr3Solution[1] + " similar bits");
     }
 }
