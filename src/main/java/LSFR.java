@@ -1,6 +1,6 @@
 /**
  * Created by kuhnert on 19.05.16.
- * LSFR -> Line Shift Feedback Register
+ * LSFR: Line Shift Feedback Register
  */
 public class LSFR {
     private int register, mask, out, taps;

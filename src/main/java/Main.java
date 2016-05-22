@@ -1,5 +1,4 @@
 import java.util.BitSet;
-import java.util.Collections;
 
 /**
  * Created by kuhnert on 19.05.16.
@@ -31,16 +30,16 @@ public class Main {
             lsfr1 = new LSFR(i, 0x7FFFF, 0x40000, 0x72000);
             lsfrSolution = lsfr1.getNextBit(114);
             lsfrBitset = BitSet.valueOf(lsfrSolution);
-            firstLFSRSolutions[i] = Util.checkSimilarity(lsfrBitset, ATOBBS);
+            firstLFSRSolutions[i] = Util.checkSimilarity(lsfrBitset, ATOBBS, 114);
         }
         lsfr1Solution = Util.maxIndex(firstLFSRSolutions);
 
         // Checking LSFR 3
-        for(int i = 0; i< 0x7FFFFF; i++) {
+        for(int i = 1; i< 0x7FFFFF; i++) {
             lsfr3 = new LSFR(i, 0x7FFFFF, 0x400000, 0x700080);
             lsfrSolution = lsfr3.getNextBit(114);
             lsfrBitset = BitSet.valueOf(lsfrSolution);
-            thirdLFSRSolutions[i] = Util.checkSimilarity(lsfrBitset, ATOBBS);
+            thirdLFSRSolutions[i] = Util.checkSimilarity(lsfrBitset, ATOBBS, 114);
         }
         lsfr3Solution = Util.maxIndex(thirdLFSRSolutions);
 
