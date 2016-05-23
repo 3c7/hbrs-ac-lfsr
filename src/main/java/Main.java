@@ -26,7 +26,8 @@ public class Main {
      */
     public static void main(String[] args) {
         LSFR lsfr1, lsfr2, lsfr3;
-        int[] lsfr1Solution, lsfr2Solution, lsfr3Solution;
+        int[] lsfr1Solution, lsfr3Solution;
+        int lsfr2Solution;
 
         // Checking LSFR 1
         for (int i = 1; i < 0x7FFFF; i++) {
@@ -46,25 +47,11 @@ public class Main {
         }
         lsfr3Solution = Util.maxIndex(thirdLFSRSolutions);
 
-        // Try to guess LSFR 2
-        // First set LSFR1 and LSFR3 to the correct value and get the next 114 Bits
-        lsfr1 = new LSFR(0x62DD1, 0x7FFFF, 0x40000, 0x72000);
-        lsfr3 = new LSFR(0x506FA8, 0x7FFFFF, 0x400000, 0x700080);
-        lsfr1Bytes = lsfr1.getNextBit(114);
-        lsfr3Bytes = lsfr3.getNextBit(114);
-
-        // These are the first 114 clocked bytes
-        lsfr2Bytes = Util.recombine(ATOB, lsfr1Bytes, lsfr3Bytes);
-
-        for(int i=1;i<0x3FFFFF;i++) {
-            lsfr2 = new LSFR(i, 0x3FFFFF, 0x200000, 0x300000);
-            lsfrBitset = BitSet.valueOf(lsfr2.getNextBit(114));
-            secondLFSRSolutions[i] = Util.checkSimilarity(lsfrBitset, BitSet.valueOf(lsfr2Bytes));
-        }
-        lsfr2Solution = Util.maxIndex(secondLFSRSolutions);
+        // Bruteforce LSFR2 initital state
+        lsfr2Solution = Util.bruteforceLSFR2(ATOB, lsfr1Solution[0], lsfr3Solution[0]);
 
         System.out.println("Initial R1 State was: 0x" + Integer.toHexString(lsfr1Solution[0]) + " with " + lsfr1Solution[1] + " similar bits");
-        System.out.println("Initial R2 State was: 0x" + Integer.toHexString(lsfr2Solution[0]) + " with " + lsfr2Solution[1] + " similar bits");
+        System.out.println("Initial R2 State was: 0x" + Integer.toHexString(lsfr2Solution));
         System.out.println("Initial R3 State was: 0x" + Integer.toHexString(lsfr3Solution[0]) + " with " + lsfr3Solution[1] + " similar bits");
     }
 }
